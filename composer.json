@@ -1,0 +1,36 @@
+{
+    "name": "lara-igniter/activitylog",
+    "description": "Log activity inside your Laraigniter app.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "laraigniter",
+        "activity",
+        "audit",
+        "log"
+    ],
+    "require": {
+        "php": "^7.4",
+        "ext-json": "*",
+        "lara-igniter/enum": "^1.0",
+        "lara-igniter/framework": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laraigniter\\Activitylog\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "extra": {
+        "laraigniter": {
+            "providers": [
+                "Laraigniter\\Activitylog\\ActivitylogServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
+
