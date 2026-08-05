@@ -75,7 +75,9 @@ trait LogsActivity
     {
         foreach ($models as $model) {
             if (is_array($model) || is_object($model)) {
-                $this->recordActivity(ActivityEvent::DELETED, $model, $this->objectToArray($model));
+                $subject = $this->softDeletedSubject($model);
+
+                $this->recordActivity(ActivityEvent::DELETED, $subject, $this->objectToArray($subject));
             }
         }
 
@@ -209,6 +211,28 @@ trait LogsActivity
         }
 
         return [$dirtyAttributes, $dirtyOldAttributes];
+    }
+
+    /**
+     * MY_Model provides only the primary key to a soft-delete observer. Reload
+     * that row with trashed records included so the activity contains the
+     * attributes that were deleted.
+     *
+     * @param object|array<string, mixed> $subject
+     * @return object|array<string, mixed>
+     */
+    private function softDeletedSubject($subject)
+    {
+        $attributes = $this->objectToArray($subject);
+        $id = $attributes[$this->getKeyName()] ?? null;
+
+        if (! is_numeric($id) || ! method_exists($this, 'withTrashed')) {
+            return $subject;
+        }
+
+        $deletedSubject = $this->withTrashed()->find((int) $id);
+
+        return is_object($deletedSubject) ? $deletedSubject : $subject;
     }
 
     /**
