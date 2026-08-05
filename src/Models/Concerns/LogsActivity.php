@@ -99,14 +99,32 @@ trait LogsActivity
         return $models;
     }
 
-    /** @param mixed $affected */
-    protected function activitylogRestored($affected)
+    /** @param mixed $models */
+    protected function activitylogRestored($models)
     {
-        if (is_object($affected) || is_array($affected)) {
-            $this->recordActivity(ActivityEvent::RESTORED, $affected, $this->objectToArray($affected));
+        if (is_object($models)) {
+            $this->recordActivity(ActivityEvent::RESTORED, $models, $this->objectToArray($models));
+
+            return $models;
         }
 
-        return $affected;
+        if (! is_array($models)) {
+            return $models;
+        }
+
+        if (array_key_exists($this->getKeyName(), $models)) {
+            $this->recordActivity(ActivityEvent::RESTORED, $models, $models);
+
+            return $models;
+        }
+
+        foreach ($models as $model) {
+            if (is_array($model) || is_object($model)) {
+                $this->recordActivity(ActivityEvent::RESTORED, $model, $this->objectToArray($model));
+            }
+        }
+
+        return $models;
     }
 
     /** @param object|array<string, mixed> $subject */
@@ -304,3 +322,4 @@ trait LogsActivity
         return is_object($value) ? get_object_vars($value) : $value;
     }
 }
+
