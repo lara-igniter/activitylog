@@ -13,7 +13,9 @@ final class LogOptions
     public array $logAttributes = [];
     public array $logExceptAttributes = [];
     public array $dontLogIfAttributesChangedOnly = [];
+    public array $morphs = [];
     public ?Closure $descriptionForEvent = null;
+    public ?Closure $propertiesForEvent = null;
 
     public static function defaults(): self
     {
@@ -60,6 +62,19 @@ final class LogOptions
         return $this;
     }
 
+    /**
+     * Store the type and ID of the supplied polymorphic attribute prefixes as
+     * contextual activity properties.
+     *
+     * @param array<int, string> $morphs
+     */
+    public function logMorphs(array $morphs): self
+    {
+        $this->morphs = array_values(array_unique($morphs));
+
+        return $this;
+    }
+
     public function dontLogEmptyChanges(): self
     {
         $this->logEmptyChanges = false;
@@ -77,6 +92,13 @@ final class LogOptions
     public function setDescriptionForEvent(Closure $callback): self
     {
         $this->descriptionForEvent = $callback;
+
+        return $this;
+    }
+
+    public function setPropertiesForEvent(Closure $callback): self
+    {
+        $this->propertiesForEvent = $callback;
 
         return $this;
     }

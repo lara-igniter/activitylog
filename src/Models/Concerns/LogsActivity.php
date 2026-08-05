@@ -130,6 +130,20 @@ trait LogsActivity
             ->performedOn($this, $this->subjectId($subject))
             ->withChanges(['attributes' => $changes]);
 
+        $properties = $this->morphPropertiesForLogging($attributes, $options->morphs);
+
+        if ($options->propertiesForEvent !== null) {
+            $customProperties = ($options->propertiesForEvent)($event, $attributes);
+
+            if (is_array($customProperties)) {
+                $properties = array_merge($properties, $customProperties);
+            }
+        }
+
+        if ($properties !== []) {
+            $activity->withProperties($properties);
+        }
+
         if ($event === ActivityEvent::UPDATED && $oldChanges !== []) {
             $activity->withChanges([
                 'attributes' => $changes,
@@ -195,6 +209,32 @@ trait LogsActivity
         }
 
         return [$dirtyAttributes, $dirtyOldAttributes];
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     * @param array<int, string> $morphs
+     * @return array<string, array<string, array{type: string, id: int}>>
+     */
+    private function morphPropertiesForLogging(array $attributes, array $morphs): array
+    {
+        $relations = [];
+
+        foreach ($morphs as $morph) {
+            $type = $attributes[$morph . '_type'] ?? null;
+            $id = $attributes[$morph . '_id'] ?? null;
+
+            if (! is_string($type) || $type === '' || ! is_numeric($id)) {
+                continue;
+            }
+
+            $relations[$morph] = [
+                'type' => $type,
+                'id' => (int) $id,
+            ];
+        }
+
+        return $relations === [] ? [] : ['polymorphic_relations' => $relations];
     }
 
     /** @param mixed $first

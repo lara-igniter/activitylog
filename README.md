@@ -83,6 +83,18 @@ class Receipt extends MY_Model
 
 The trait records `created`, `updated`, `deleted`, and `restored` events. For a single-record update, it captures the persisted row before the write and stores Laravel-style changes: new values under `attribute_changes.attributes` and previous values under `attribute_changes.old`. With `logOnlyDirty()`, unchanged attributes are excluded from both collections.
 
+### Polymorphic model context
+
+For a logged model with polymorphic columns, declare the relationship prefix with `logMorphs()`. The type and ID are stored in the activity `properties.polymorphic_relations` collection, separately from the attribute changes.
+
+```php
+return LogOptions::defaults()
+    ->logFillable()
+    ->logMorphs(['addressable']); // addressable_type and addressable_id
+```
+
+Multiple relations are supported: `->logMorphs(['emailable', 'receiptable'])`. The activity-log UI can render every configured relation without model-specific conditions.
+
 ## Query logs and retention
 
 ```php

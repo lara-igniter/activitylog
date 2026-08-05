@@ -187,7 +187,7 @@ final class ActivityLogger
             'properties' => json_encode($this->properties, JSON_THROW_ON_ERROR),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
-        ]);
+        ])->get();
 
         return $activity;
     }
