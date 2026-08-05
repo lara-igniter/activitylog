@@ -81,7 +81,7 @@ class Receipt extends MY_Model
 }
 ```
 
-The trait records `created`, `updated`, `deleted`, and `restored` events. For a single-record update, it captures the persisted row before the write and stores Laravel-style changes: new values under `attribute_changes.attributes` and previous values under `attribute_changes.old`. With `logOnlyDirty()`, unchanged attributes are excluded from both collections.
+The trait records `created`, `updated`, `deleted`, `force_deleted`, and `restored` events. `deleted` represents a soft delete; `force_deleted` represents a permanent deletion. For a single-record update, it captures the persisted row before the write and stores Laravel-style changes: new values under `attribute_changes.attributes` and previous values under `attribute_changes.old`. With `logOnlyDirty()`, unchanged attributes are excluded from both collections.
 
 ### Polymorphic model context
 
@@ -123,5 +123,3 @@ php artisan activitylog:clean receipts --days=90
 ```
 
 Set `ACTIVITYLOG_ENABLED=false` to stop persistence. The default configuration excludes `password` and `remember_token`; extend `default_except_attributes` for additional sensitive fields.
-
-

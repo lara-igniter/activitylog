@@ -16,8 +16,11 @@ trait LogsActivity
 
     protected function initializeLogsActivity(): void
     {
-        foreach ([ActivityEvent::CREATED, ActivityEvent::UPDATING, ActivityEvent::UPDATED, ActivityEvent::DELETED, ActivityEvent::RESTORED] as $event) {
-            $this->{$event}[] = 'activitylog' . ucfirst($event);
+        foreach ([ActivityEvent::CREATED, ActivityEvent::UPDATING, ActivityEvent::UPDATED, ActivityEvent::DELETED, ActivityEvent::FORCE_DELETED, ActivityEvent::RESTORED] as $event) {
+            $modelEvent = $event === ActivityEvent::FORCE_DELETED ? 'forceDeleted' : $event;
+            $method = 'activitylog' . str_replace('_', '', ucwords($event, '_'));
+
+            $this->{$modelEvent}[] = $method;
         }
     }
 
@@ -78,6 +81,18 @@ trait LogsActivity
                 $subject = $this->softDeletedSubject($model);
 
                 $this->recordActivity(ActivityEvent::DELETED, $subject, $this->objectToArray($subject));
+            }
+        }
+
+        return $models;
+    }
+
+    /** @param array<int, object|array<string, mixed>> $models */
+    protected function activitylogForceDeleted(array $models): array
+    {
+        foreach ($models as $model) {
+            if (is_array($model) || is_object($model)) {
+                $this->recordActivity(ActivityEvent::FORCE_DELETED, $model, $this->objectToArray($model));
             }
         }
 
@@ -289,4 +304,3 @@ trait LogsActivity
         return is_object($value) ? get_object_vars($value) : $value;
     }
 }
-

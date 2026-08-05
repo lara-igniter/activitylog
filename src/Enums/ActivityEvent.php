@@ -18,6 +18,8 @@ final class ActivityEvent extends BaseEnum implements HasLabel
 
     public const DELETED = 'deleted';
 
+    public const FORCE_DELETED = 'force_deleted';
+
     public const RESTORED = 'restored';
 
     public static function labels(): array
@@ -27,6 +29,7 @@ final class ActivityEvent extends BaseEnum implements HasLabel
             self::UPDATING => self::UPDATING,
             self::UPDATED => self::UPDATED,
             self::DELETED => self::DELETED,
+            self::FORCE_DELETED => self::FORCE_DELETED,
             self::RESTORED => self::RESTORED,
         ];
     }
@@ -37,6 +40,7 @@ final class ActivityEvent extends BaseEnum implements HasLabel
             self::CREATED => 'success',
             self::UPDATED => 'warning',
             self::DELETED => 'danger',
+            self::FORCE_DELETED => 'danger',
             self::RESTORED => 'primary',
         ];
 
