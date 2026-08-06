@@ -122,4 +122,13 @@ php artisan activitylog:clean --days=90
 php artisan activitylog:clean receipts --days=90
 ```
 
+Delete every activity record explicitly, or every record in one named log:
+
+```powershell
+php artisan activitylog:clean --all
+php artisan activitylog:clean receipts --all
+```
+
+`--all` permanently deletes matching activity records and cannot be combined with `--days`.
+
 Set `ACTIVITYLOG_ENABLED=false` to stop persistence. The default configuration excludes `password` and `remember_token`; extend `default_except_attributes` for additional sensitive fields.

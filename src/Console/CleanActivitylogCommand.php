@@ -14,7 +14,8 @@ class CleanActivitylogCommand extends Command
      */
     protected string $signature = 'activitylog:clean
                                     {log? : Optional log name to clean}
-                                    {--days= : Delete records older than this number of days}';
+                                    {--days= : Delete records older than this number of days}
+                                    {--all : Delete all records, ignoring the retention period}';
 
     /**
      * The default name used by the console router.
@@ -33,6 +34,13 @@ class CleanActivitylogCommand extends Command
     public function handle(): int
     {
         $days = $this->option('days');
+        $deleteAll = (bool) $this->option('all');
+
+        if ($deleteAll && $days !== null) {
+            $this->error('The all option cannot be combined with the days option.');
+
+            return 1;
+        }
 
         if ($days !== null && (filter_var($days, FILTER_VALIDATE_INT) === false || (int) $days < 1)) {
             $this->error('The days option must be a positive integer.');
@@ -44,7 +52,8 @@ class CleanActivitylogCommand extends Command
 
         $deleted = (new CleanActivityLogAction())->execute(
             $days === null ? null : (int) $days,
-            $this->argument('log')
+            $this->argument('log'),
+            $deleteAll
         );
 
         $deletedCount = is_array($deleted) ? count($deleted) : (int) $deleted;
@@ -55,4 +64,3 @@ class CleanActivitylogCommand extends Command
         return 0;
     }
 }
-
