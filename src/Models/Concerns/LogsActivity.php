@@ -215,7 +215,7 @@ trait LogsActivity
         $changes = [];
         foreach (array_diff($allowed, $excluded) as $attribute) {
             if (array_key_exists($attribute, $attributes)) {
-                $changes[$attribute] = $this->normalizeValueForLogging($attributes[$attribute]);
+                $changes[$attribute] = $this->normalizeValueForLogging($attributes[$attribute], $attribute);
             }
         }
 
@@ -237,7 +237,7 @@ trait LogsActivity
         foreach ($attributes as $attribute => $value) {
             $oldValue = $oldAttributes[$attribute] ?? null;
 
-            if (array_key_exists($attribute, $oldAttributes) && $this->valuesAreEquivalent($value, $oldValue)) {
+            if (array_key_exists($attribute, $oldAttributes) && $this->valuesAreEquivalent($value, $oldValue, $attribute)) {
                 continue;
             }
 
@@ -299,10 +299,13 @@ trait LogsActivity
     /** @param mixed $first
      * @param mixed $second
      */
-    private function valuesAreEquivalent($first, $second): bool
+    private function valuesAreEquivalent($first, $second, string $attribute): bool
     {
+        $first = $this->normalizeValueForLogging($first, $attribute);
+        $second = $this->normalizeValueForLogging($second, $attribute);
+
         if ($first instanceof DateTimeInterface && $second instanceof DateTimeInterface) {
-            return $this->normalizeValueForLogging($first) === $this->normalizeValueForLogging($second);
+            return $this->normalizeValueForLogging($first, $attribute) === $this->normalizeValueForLogging($second, $attribute);
         }
 
         if ($first === $second) {
@@ -323,13 +326,21 @@ trait LogsActivity
      * @param mixed $value
      * @return mixed
      */
-    private function normalizeValueForLogging($value)
+    private function normalizeValueForLogging($value, ?string $attribute = null)
     {
+        $timezone = new DateTimeZone(date_default_timezone_get() ?: 'UTC');
+
+        if (is_string($value) && $this->isDateCastAttribute($attribute)) {
+            try {
+                $value = new \DateTimeImmutable($value, $timezone);
+            } catch (\Exception $exception) {
+                return $value;
+            }
+        }
+
         if (! $value instanceof DateTimeInterface) {
             return $value;
         }
-
-        $timezone = new DateTimeZone(date_default_timezone_get() ?: 'UTC');
 
         if ($value instanceof \DateTimeImmutable) {
             return $value->setTimezone($timezone)
@@ -340,6 +351,19 @@ trait LogsActivity
         $dateTime->setTimezone($timezone);
 
         return $dateTime->format('Y-m-d\TH:i:s.uP');
+    }
+
+    private function isDateCastAttribute(?string $attribute): bool
+    {
+        if ($attribute === null || ! method_exists($this, 'getCasts')) {
+            return false;
+        }
+
+        $casts = $this->getCasts();
+        $cast = $casts[$attribute] ?? null;
+        $castType = is_string($cast) ? explode(':', $cast, 2)[0] : null;
+
+        return in_array($castType, ['date', 'datetime', 'custom_datetime'], true);
     }
 
     /** @param object|array<string, mixed> $subject */
@@ -358,4 +382,3 @@ trait LogsActivity
         return is_object($value) ? get_object_vars($value) : $value;
     }
 }
-
