@@ -56,7 +56,9 @@ trait LogsActivity
     /** @param array<string, mixed> $attributes */
     protected function activitylogUpdating(array $attributes): array
     {
-        $this->activitylogOriginalAttributes = $this->getOriginalAttributes();
+        $this->activitylogOriginalAttributes = method_exists($this, 'getRawOriginalAttributes')
+            ? $this->getRawOriginalAttributes()
+            : $this->getOriginalAttributes();
 
         return $attributes;
     }
