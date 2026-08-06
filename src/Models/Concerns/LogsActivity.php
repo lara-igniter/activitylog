@@ -2,6 +2,8 @@
 
 namespace Laraigniter\Activitylog\Models\Concerns;
 
+use DateTimeInterface;
+use DateTimeZone;
 use Laraigniter\Activitylog\Enums\ActivityEvent;
 use Laraigniter\Activitylog\Support\ActivitylogConfig;
 use Laraigniter\Activitylog\Support\LogOptions;
@@ -213,7 +215,7 @@ trait LogsActivity
         $changes = [];
         foreach (array_diff($allowed, $excluded) as $attribute) {
             if (array_key_exists($attribute, $attributes)) {
-                $changes[$attribute] = $attributes[$attribute];
+                $changes[$attribute] = $this->normalizeValueForLogging($attributes[$attribute]);
             }
         }
 
@@ -299,11 +301,45 @@ trait LogsActivity
      */
     private function valuesAreEquivalent($first, $second): bool
     {
+        if ($first instanceof DateTimeInterface && $second instanceof DateTimeInterface) {
+            return $this->normalizeValueForLogging($first) === $this->normalizeValueForLogging($second);
+        }
+
         if ($first === $second) {
             return true;
         }
 
         return is_numeric($first) && is_numeric($second) && (string) $first === (string) $second;
+    }
+
+    /**
+     * Convert date values to a stable representation for comparison and JSON logs.
+     *
+     * Different Carbon/DateTime instances can represent the same persisted value.
+     * Comparing their value in the framework-configured PHP timezone avoids false
+     * activity changes and prevents date objects from being encoded as empty JSON
+     * objects while preserving date-only casts in the application's timezone.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    private function normalizeValueForLogging($value)
+    {
+        if (! $value instanceof DateTimeInterface) {
+            return $value;
+        }
+
+        $timezone = new DateTimeZone(date_default_timezone_get() ?: 'UTC');
+
+        if ($value instanceof \DateTimeImmutable) {
+            return $value->setTimezone($timezone)
+                ->format('Y-m-d\TH:i:s.uP');
+        }
+
+        $dateTime = clone $value;
+        $dateTime->setTimezone($timezone);
+
+        return $dateTime->format('Y-m-d\TH:i:s.uP');
     }
 
     /** @param object|array<string, mixed> $subject */
