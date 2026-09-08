@@ -45,10 +45,12 @@ trait LogsActivity
         return $this;
     }
 
-    /** @param object $model */
+    /** @param object|array<string, mixed>|null $model */
     protected function activitylogCreated($model)
     {
-        $this->recordActivity(ActivityEvent::CREATED, $model, $this->objectToArray($model));
+        if (is_array($model) || is_object($model)) {
+            $this->recordActivity(ActivityEvent::CREATED, $model, $this->objectToArray($model));
+        }
 
         return $model;
     }
@@ -63,15 +65,18 @@ trait LogsActivity
         return $attributes;
     }
 
-    /** @param object $model */
+    /** @param object|array<string, mixed>|null $model */
     protected function activitylogUpdated($model)
     {
-        $this->recordActivity(
-            ActivityEvent::UPDATED,
-            $model,
-            $this->objectToArray($model),
-            $this->activitylogOriginalAttributes
-        );
+        if (is_array($model) || is_object($model)) {
+            $this->recordActivity(
+                ActivityEvent::UPDATED,
+                $model,
+                $this->objectToArray($model),
+                $this->activitylogOriginalAttributes
+            );
+        }
+
         $this->activitylogOriginalAttributes = [];
 
         return $model;
@@ -381,6 +386,10 @@ trait LogsActivity
      */
     private function objectToArray($value): array
     {
-        return is_object($value) ? get_object_vars($value) : $value;
+        if (is_object($value)) {
+            return get_object_vars($value);
+        }
+
+        return is_array($value) ? $value : [];
     }
 }
