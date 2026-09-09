@@ -10,7 +10,7 @@ $config = [
     /* Used when activity() receives no log name. */
     'default_log_name' => 'default',
 
-    /* The MY_Model implementation used to persist activities. */
+    /* The Model implementation used to persist activities. */
     'activity_model' => Laraigniter\Activitylog\Models\Activity::class,
 
     /* Attributes never persisted by LogsActivity, including model-specific logExcept values. */

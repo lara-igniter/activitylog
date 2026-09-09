@@ -256,7 +256,7 @@ trait LogsActivity
     }
 
     /**
-     * MY_Model provides only the primary key to a soft-delete observer. Reload
+     * Model provides only the primary key to a soft-delete observer. Reload
      * that row with trashed records included so the activity contains the
      * attributes that were deleted.
      *

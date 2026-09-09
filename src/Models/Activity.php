@@ -2,9 +2,9 @@
 
 namespace Laraigniter\Activitylog\Models;
 
-use App\Core\MY_Model;
+use Elegant\Database\Model\Model;
 
-class Activity extends MY_Model
+class Activity extends Model
 {
     protected string $table = 'activity_log';
 
@@ -27,26 +27,26 @@ class Activity extends MY_Model
         'properties' => 'array',
     ];
 
-    public function scopeInLog(MY_Model $query, string $logName): MY_Model
+    public function scopeInLog(Model $query, string $logName): Model
     {
         return $query->where('log_name', $logName);
     }
 
-    public function scopeCausedBy(MY_Model $query, object $causer): MY_Model
+    public function scopeCausedBy(Model $query, object $causer): Model
     {
         return $query
             ->where('causer_type', get_class($causer))
             ->where('causer_id', (int) $causer->id);
     }
 
-    public function scopeForSubject(MY_Model $query, object $subject, ?int $subjectId = null): MY_Model
+    public function scopeForSubject(Model $query, object $subject, ?int $subjectId = null): Model
     {
         return $query
             ->where('subject_type', get_class($subject))
             ->where('subject_id', $subjectId ?? (int) $subject->id);
     }
 
-    public function scopeForEvent(MY_Model $query, string $event): MY_Model
+    public function scopeForEvent(Model $query, string $event): Model
     {
         return $query->where('event', $event);
     }

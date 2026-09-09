@@ -1,6 +1,6 @@
 # Laraigniter activity log
 
-Auditable activity logging for Laraigniter applications. It uses `App\Core\MY_Model`, CodeIgniter config groups, and the existing Laraigniter model-event arrays; it has no Laravel or Eloquent dependency.
+Auditable activity logging for Laraigniter applications. It uses `Elegant\Database\Model\Model`, CodeIgniter config groups, and the existing Laraigniter model-event arrays; it has no Laravel or Eloquent dependency.
 
 ## Installation
 
@@ -56,13 +56,13 @@ The authenticated Ion Auth user is attached automatically. Use `causedBy()` to s
 
 ## Automatically log model events
 
-Use `LogsActivity` in an `MY_Model` class and return its options:
+Use `LogsActivity` in an `Model` class and return its options:
 
 ```php
 use Laraigniter\Activitylog\Models\Concerns\LogsActivity;
 use Laraigniter\Activitylog\Support\LogOptions;
 
-class Receipt extends MY_Model
+class Receipt extends Model
 {
     use LogsActivity;
 
